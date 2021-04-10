@@ -19,23 +19,21 @@ glimpse(us_19)
 ```
 
 ```{r}
-#us_19 <- us_19 %>% 
-#  filter(STATUS == 3)
-#nrow(us_19)
+us_19 <- us_19 %>% 
+  filter(STATUS == 3)
+nrow(us_19)
 ```
 ```{r}
-#ggplot(data = us_19, mapping = aes(x = DEM_AGE10)) +
-#  geom_bar()
+ggplot(data = us_19, mapping = aes(x = DEM_AGE10)) +
+  geom_bar()
 ```
 
 ```{r}
-#ggplot(data = us_19, mapping = aes(x = factor(MENT_NONE), fill = factor(DEM_AGE10))) +
-#  geom_bar()
+ggplot(data = us_19, mapping = aes(x = factor(MENT_NONE), fill = factor(DEM_AGE10))) +
+  geom_bar()
 ```
 ```{r}
-#us_19 %>%
-#  count(factor(MENT_NONE))
+us_19 %>%
+  count(factor(MENT_NONE))
 ```
-
-
 
