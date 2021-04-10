@@ -1,7 +1,7 @@
 ---
 title: "EDA"
 author: "Eden Deng, Sara Shao, Allison Shi, Larry Zheng, Lily Zhu"
-date: "4/10/2021"
+date: "`r Sys.Date()`"
 output: html_document
 ---
 
@@ -14,8 +14,8 @@ library(tidyverse)
 ```
 
 ```{r}
-#us_19 <- read_csv('us_19.csv')
-#nrow(us_19)
+us_19 <- read_csv('~/df_data/US/us_19.csv')
+glimpse(us_19)
 ```
 
 ```{r}
