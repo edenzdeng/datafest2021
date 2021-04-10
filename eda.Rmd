@@ -1,0 +1,41 @@
+---
+title: "EDA"
+author: "Eden Deng, Sara Shao, Allison Shi, Larry Zheng, Lily Zhu"
+date: "4/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+library(tidyverse) 
+```
+
+```{r}
+#us_19 <- read_csv('us_19.csv')
+#nrow(us_19)
+```
+
+```{r}
+#us_19 <- us_19 %>% 
+#  filter(STATUS == 3)
+#nrow(us_19)
+```
+```{r}
+#ggplot(data = us_19, mapping = aes(x = DEM_AGE10)) +
+#  geom_bar()
+```
+
+```{r}
+#ggplot(data = us_19, mapping = aes(x = factor(MENT_NONE), fill = factor(DEM_AGE10))) +
+#  geom_bar()
+```
+```{r}
+#us_19 %>%
+#  count(factor(MENT_NONE))
+```
+
+
+
