@@ -1,0 +1,34 @@
+---
+title: "EDA"
+author: "Lily Zhu"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+library(tidyverse)
+```
+
+```{r}
+us_19 <- read_csv('~/df_data/US/us_19.csv')
+#glimpse(us_19)
+```
+
+```{r}
+us_19 %>% 
+  mutate(THC_USE = as.factor(THC_USE), DAST_1 = as.factor(DAST_1)) %>% 
+  ggplot(mapping = aes(x = DAST_1, fill = THC_USE)) +
+  geom_bar() + 
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+us_19 %>%
+  group_by(factor(DAST_1)) %>% 
+  count(factor(THC_USE)) %>% 
+  mutate(pct_total = n/sum(n))
+```
