@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(tidyverse)
 library(BMA)
+library(MASS)
+library(car)
 ```
 
 ```{r load_data, include=FALSE}
@@ -21,7 +23,7 @@ us19 = read.csv("data/us_19.csv")
 ## using 10% cut-off here
 useyr <- us19 %>%
   filter(OP_USE == 1) %>%
-  select(ends_with("USEYR"))
+  dplyr::select(ends_with("USEYR"))
 
 keep = c()
 for (col in colnames(useyr)) {
@@ -41,7 +43,7 @@ keep <- keep[!keep %in% c("OP_USEYR", "GABA_USEYR", "PAINREL_USEYR", "OTCOTH_USE
 ## to predict opioid misuse in past year
 op_users <- us19 %>%
   filter(OP_USE == 1) %>%
-  select(DEM_AGE10, DEM_REGION, DEM_GENDER, DEM_INCOME, DEM_EDU, OP_NMUYR, DAST_SUM, all_of(keep), starts_with("MENT"), starts_with("DEM_RACE"), PAIN_ACUTEYR, PAIN_CHRONICYR)
+  dplyr::select(DEM_AGE10, DEM_REGION, DEM_GENDER, DEM_INCOME, DEM_EDU, OP_NMUYR, DAST_SUM, all_of(keep), starts_with("MENT"), starts_with("DEM_RACE"), PAIN_ACUTEYR, PAIN_CHRONICYR)
 
 # race and mental health diagnosis indicator variables
 op_users <- op_users %>%
@@ -51,7 +53,7 @@ op_users <- op_users %>%
          DEM_RACE_NHPI == 1 ~ 'NHPI',
          DEM_RACE_WHITE == 1 ~ 'WHITE',
          DEM_RACE_OTH == 1 ~ "OTHER")) %>%
-  select(-DEM_RACE_AIAN, -DEM_RACE_ASIAN, -DEM_RACE_BLACK, -DEM_RACE_OTH, -DEM_RACE_WHITE, -DEM_RACE_NHPI) %>%
+  dplyr::select(-DEM_RACE_AIAN, -DEM_RACE_ASIAN, -DEM_RACE_BLACK, -DEM_RACE_OTH, -DEM_RACE_WHITE, -DEM_RACE_NHPI) %>%
   mutate(DIAGNOSIS_MENT = case_when(MENT_ANYANX == 1 ~ 1,
                           MENT_ADHD == 1 ~ 1,
                           MENT_AUT == 1 ~ 1,
@@ -65,7 +67,7 @@ op_users <- op_users %>%
                           MENT_SCH == 1 ~ 1,
                           MENT_OTH == 1 ~ 1,
                           MENT_NONE == 1 ~ 0)) %>%
-  select(-starts_with("MENT"))
+  dplyr::select(-starts_with("MENT"))
 
 for (col in colnames(op_users)) {
   op_users[col] = lapply(op_users[col], factor)
@@ -84,7 +86,7 @@ par(mfrow=c(2,2))
 barplot(table(op_users$DAST_SUM), xlab = "DAST-10 score", ylab = "Count")
 barplot(table(op_users$DEM_GENDER), xlab = "Gender (1=M)", ylab = "Count")
 barplot(table(op_users$DEM_INCOME), xlab = "Income category", ylab = "Count")
-barplot(table(op_users$DEM_AGE10, xlab = "Age category", ylab = "Count"))
+barplot(table(op_users$DEM_AGE10), xlab = "Age category", ylab = "Count")
 table(op_users$RACE)
 ```
 
