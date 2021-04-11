@@ -1,5 +1,5 @@
 ---
-title: "MODEL"
+title: "EDA"
 author: "Allison Shi"
 date: "`r Sys.Date()"
 output: pdf_document
@@ -18,96 +18,143 @@ library(patchwork)
 ```
 
 ```{r, message = F}
-us_19 <- read_csv('~/df_data/US/us_19.csv')
+us_19 <- read_csv('~/df_data/US/us_19.csv') %>%
+  mutate(DAST_binary = if_else(DAST_SUM < 3, 0, 1))
 #glimpse(us_19)
+```
+
+``` {r}
+col_names <- colnames(us_19)
+us_19 <- lapply(us_19, as.factor)
+us_19 <- data.frame(matrix(unlist(us_19), nrow=length(us_19), byrow=TRUE))
+us_19 <- data.frame(t(us_19))
+colnames(us_19) <- col_names
 ```
 
 ## EDA
 
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT))) +
-  geom_bar()
+**Distribution of Binary Response Variable**
+
+```{r dist of binary response, fig.height = 3, fig.width = 5, fig.align='center'}
+ggplot(data = us_19, aes(x = DAST_binary))+
+  geom_bar(fill = "#00539B") +
+  labs(title = "Distribution of Binary DAST-10 Score Category",
+       x = "DAST-10 Score Category", y = "Count") +
+  scale_x_discrete(labels=c("0" = "DAST_SUM < 3", "1" = "DAST_SUM > 3"))
+  theme_bw()
 ```
 
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(PAINREL_NMUYR))) +
-  geom_bar() +
-  scale_fill_brewer(palette="Set3")
+
+**Distribution of demographic predictor variables**
+
+```{r dist of predictors, fig.height = 3, fig.width = 6, fig.align='center'}
+gender <- ggplot(data = us_19, aes(x = DEM_GENDER))+
+  geom_bar(fill = "#00539B") +
+   xlab("Gender") + ylab("Count") +
+   ggtitle("Gender of Respondent") +
+   scale_x_discrete(labels=c("1" = "Male", "2" = "Female")) +
+   theme_bw(base_size = 9) +
+   theme(plot.title = element_text(size = 9, hjust = 0.5))
+
+age <- ggplot(data = us_19, aes(x = DEM_AGE10))+
+  geom_bar(fill = "#00539B") +
+   xlab("Age") + ylab("Count") +
+   ggtitle("Age of Respondent") +
+   scale_x_discrete(labels=c("1" = "18-24", "2" = "25-34 ", "3" = "35-44",
+                             "4" = "45-54", "5" = "55-64", "6" = "65+")) +
+   theme_bw(base_size = 9) +
+   theme(plot.title = element_text(size = 9, hjust = 0.5))
+
+region <- ggplot(data = us_19, aes(x = DEM_REGION))+
+  geom_bar(fill = "#00539B") +
+   xlab("Region") + ylab("Count") +
+   ggtitle("Region Currently Living In") +
+   scale_x_discrete(labels=c("1" = "Northeast ", "2" = "Midwest", "3" = "South ",
+                             "4" = "West ")) +
+   theme_bw(base_size = 9) +
+   theme(plot.title = element_text(size = 9, hjust = 0.5))
+
+income <- ggplot(data = us_19, aes(x = DEM_INCOME))+
+  geom_bar(fill = "#00539B") +
+   xlab("Income (in $)") + ylab("Count") +
+   ggtitle("Combined Household Income in the Last 12 Months") +
+   scale_x_discrete(labels=c("1" = "< 25,000", "2" = "25,000-49,999", "3" = "50,000-74,999",
+                             "4" = "75,000-99,999", "5" = "> 100,000")) +
+   theme_bw(base_size = 9) +
+   theme(plot.title = element_text(size = 9, hjust = 0.5))
+
+smoking <- ggplot(data = us_19, aes(x = TOB_LIFE))+
+  geom_bar(fill = "#00539B") +
+   xlab("Response") + ylab("Count") +
+   ggtitle("Smoking Status") +
+   scale_x_discrete(labels=c("1" = "Every day", "2" = "Some days", "3" = "Not at all",
+                             "4" = "Don’t know")) +
+   theme_bw(base_size = 9) +
+   theme(plot.title = element_text(size = 9, hjust = 0.5))
+
+(gender | age ) /
+  (region | smoking) 
 ```
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(STIM_NMUYR))) +
-  geom_bar() +
-  scale_fill_brewer(palette="Set3")
+```{r fig.height = 3, fig.width = 6, fig.align='center'}
+income 
 ```
 
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(SED_NMUYR))) +
-  geom_bar() +
-  scale_fill_brewer(palette="Set3")
-```
+**Relationship between demographic predictor variables and response variable**
 
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(THC_NMUYR))) +
-  geom_bar() +
-  scale_fill_brewer(palette="Set3")
-```
 
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(OP_NMUYR))) +
-  geom_bar() +
-  scale_fill_brewer(palette="Set3")
-```
-
-```{r}
-ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(GABA_NMUYR))) +
-  geom_bar() +
-  scale_fill_brewer(palette="Set3")
-```
-
-```{r}
-ggplot(data = us_19, aes(x = as.factor(PAINREL_NMUYR))) +
-  geom_bar() 
-```
-
-```{r}
-ggplot(data = us_19, aes(x = as.factor(PAINREL_NMUYR))) +
-  geom_bar() 
-```
-
-```{r}
-ggplot(data = us_19, aes(x = DEM_AGE)) +
-  geom_histogram()
-```
-`CAN_USE` = 
-```{r}
-us_19 %>% 
-  mutate(SED_USE = as.factor(SED_USE), DAST_1 = as.factor(DAST_1)) %>% 
-  ggplot(mapping = aes(x = DAST_1, fill = SED_USE)) +
-  geom_bar() + 
-  scale_fill_brewer(palette="Set3")
-```
-
-```{r}
-us_19 %>%
-  group_by(factor(DAST_1)) %>% 
-  count(factor(SED_USE)) %>% 
-  mutate(pct_total = n/sum(n))
-```
-
-```{r}
-ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(SED_USE))) +
+```{r fig.height = 3, fig.width = 6, fig.align='center'}
+gender_dast_10 <- ggplot(data = us_19, mapping = aes(x = DAST_CAT, fill = DEM_GENDER)) +
   geom_bar(position = "fill") + 
-  labs(title = "Relationship between DAST-10 category \nand prescription sedative lifetime use", 
-       x = "DAST-10 category", 
-       y = "Count") +
-  scale_fill_discrete(name = "Prescription sedative \nlifetime use", labels = c("No", "Yes"), guide = guide_legend(reverse=TRUE))
+  labs(title = "DAST-10 Category vs Gender", 
+       x = "DAST-10 category", y = "") +
+  theme_bw(base_size = 9) +
+  theme(plot.title = element_text(size = 9, hjust = 0.5)) +
+  scale_fill_manual(values=c("#00539B", "lightblue"), name = "", labels = c("Male", "Female"), guide = guide_legend(reverse=TRUE))
+
+age_dast_10 <- ggplot(data = us_19, mapping = aes(x = DAST_CAT, fill = DEM_AGE10)) +
+  geom_bar(position = "fill") + 
+  labs(title = "DAST-10 Category vs Age", 
+       x = "DAST-10 category", y = "") +
+  theme_bw(base_size = 9) +
+  theme(plot.title = element_text(size = 9, hjust = 0.5)) +
+  scale_fill_manual(values=c("lightblue1", "lightblue", "steelblue2", "steelblue3", "steelblue", "#00539B"), name = "", labels = c("18-24", "25-34", "35-44", "45-54", "55-64", "65+"), guide = guide_legend(reverse=FALSE))
+
+region_dast_10 <- ggplot(data = us_19, mapping = aes(x = DAST_CAT, fill = DEM_REGION)) +
+  geom_bar(position = "fill") + 
+  labs(title = "DAST-10 Category vs Region", 
+       x = "DAST-10 category", y = "") +
+  theme_bw(base_size = 9) +
+  theme(plot.title = element_text(size = 9, hjust = 0.5)) +
+  scale_fill_manual(values=c("lightblue", "steelblue2", "steelblue3", "#00539B"), name = "", labels = c("Northeast", "Midwest", "South", "West"))
+
+income_dast_10 <- ggplot(data = us_19, mapping = aes(x = DAST_CAT, fill = DEM_INCOME)) +
+  geom_bar(position = "fill") + 
+  labs(title = "DAST-10 Category vs Income", 
+       x = "DAST-10 category", y = "") +
+  theme_bw(base_size = 9) +
+  theme(plot.title = element_text(size = 9, hjust = 0.5)) +
+  scale_fill_manual(values=c("lightblue", "steelblue2", "steelblue3", "steelblue", "#00539B"), name = "", labels = c("< 25,000", "25,000-49,999", "50,000-74,999", "75,000-99,999", "> 100,000"))
+
+smoking_dast_10 <- ggplot(data = us_19, mapping = aes(x = DAST_CAT, fill = TOB_LIFE)) +
+  geom_bar(position = "fill") + 
+  labs(title = "DAST-10 Category vs Smoking Status", 
+       x = "DAST-10 category", y = "") +
+  theme_bw(base_size = 9) +
+  theme(plot.title = element_text(size = 9, hjust = 0.5)) +
+  scale_fill_manual(values=c("lightblue", "steelblue2", "steelblue3", "#00539B"), name = "", labels = c("Every day", "Some days", "Not at all", "Don't know"))
+
+(gender_dast_10 | age_dast_10 ) /
+  (region_dast_10 | smoking_dast_10) 
 ```
 
-```{r}
-ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(SED_USE))) +
-  geom_bar(position = "fill") + 
-  labs(title = "Relationship between DAST-10 category \nand prescription sedative lifetime use", 
-       x = "DAST-10 category", 
-       y = "Count") +
-  scale_fill_discrete(name = "Prescription sedative \nlifetime use", labels = c("No", "Yes"), guide = guide_legend(reverse=TRUE))
+```{r fig.height = 3, fig.width = 6, fig.align='center'}
+income_dast_10
 ```
+
+
+
+
+
+
+
+
