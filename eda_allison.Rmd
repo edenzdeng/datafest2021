@@ -35,7 +35,7 @@ colnames(us_19) <- col_names
 
 **Distribution of Binary Response Variable**
 
-```{r dist of binary response, fig.height = 3, fig.width = 5, fig.align='center'}
+```{r dist of binary response, fig.height = 3, fig.width = 5, fig.align='center', message = FALSE, results = "hide"}
 ggplot(data = us_19, aes(x = DAST_binary))+
   geom_bar(fill = "#00539B") +
   labs(title = "Distribution of Binary DAST-10 Score Category",

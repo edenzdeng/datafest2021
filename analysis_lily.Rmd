@@ -229,6 +229,31 @@ tidy(final_binary_model, conf.int = TRUE) %>%
 
 # Results
 
+$$\log\big(\frac{\hat{\pi}}{1-\hat{\pi}}\big) = \hat{\beta}_0 + \hat{\beta}_1 \times \text{STIM_NMUYR} + \hat{\beta}_2 \times \text{THC_NMUYR} \hat{\beta}_3 \times \text{OP_NMUYR} + \hat{\beta}_4 \times \text{GABA_NMUYR} + \hat{\beta}_5 \times \text{DEM_GENDER} + \hat{\beta}_6 \times \text{DEM_AGE10} + \hat{\beta}_7 \times \text{DEM_INCOME} + \hat{\beta}_8 \times \text{TOB_LIFE}$$
+
+
+**Interpretations**
+
+Intercept:
+
+If a 18-24 year-old male has not used prescription stimulants, cannabinoids, opiods, or gaba-analogues in the past 12 months, makes less than $25,000 a year, and smokes everyday, the odds they have a DAST_10 score of 3 or higher is `r round(exp(-0.911), 3)`.
+
+`STIM_NMUYR`:
+
+If a person has used prescription stimulants in the past 12 months, we expect the odds that they have a DAST_10 score of 3 or higher is by `r round(exp(-1.886), 3)` compared to if they have not, holding all other predictor variables constant. 
+`THC_NMUYR`:
+
+If a person has used prescription cannabinoids in the past 12 months, we expect the odds that they have a DAST_10 score of 3 or higher is by `r round(exp(-1.281), 3)` compared to if they have not, holding all other predictor variables constant. 
+
+`OP_NMUYR`:
+
+If a person has used prescription opiods in the past 12 months, we expect the odds that they have a DAST_10 score of 3 or higher is by `r round(exp(1.399), 3)` compared to if they have not, holding all other predictor variables constant. 
+
+`GABA_NMUYR`:
+
+If a person has used prescription gaba-analogues in the past 12 months, we expect the odds that they have a DAST_10 score of 3 or higher is by `r round(exp(1.915	), 3)` compared to if they have not, holding all other predictor variables constant. 
+
+
 ## Model Assumptions
 
 ```{r}
@@ -310,9 +335,9 @@ ggplot(data = final_model_augmented, aes(x = obs_num, y = .cooksd)) +
 **Multicollinearity**
 
 ```{r check multicollinearity}
-vif(final_binary_model) %>%
-  tidy() %>%
-  kable(digits = 3)
+#vif(final_binary_model) %>%
+  #tidy() %>%
+  #kable(digits = 3)
 ```
 
 ## Interpretation of Final Model, Discussion & Conclusion
@@ -328,3 +353,5 @@ glance(binary_model) %>%
   select(AIC) %>%
   kable(digit = 3, caption = "Binary Model (before backward selection)")
 ```
+
+
