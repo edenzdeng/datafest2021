@@ -179,14 +179,14 @@ us_19_mod <- us_19 %>%
 # us_19_mod %>% 
 #      select(starts_with("DEM"))
 
-us_19_mod <- us_19_mod %>% 
+us_19_mod1 <- us_19_mod %>% 
   select(ends_with("NMUYR"), starts_with("DEM"), TOB_LIFE, DAST_CAT) %>% 
   subset(select = -c(DEM_PREG, DEM_PREG_WK, DEM_STDNT_PROGRAM, DEM_STDNT_UNDER, DEM_VET_SERV, DEM_HEALTH_PRIV, DEM_HEALTH_PRE, DEM_HEALTH_HOS, DEM_HEALTH_OUT, DEM_HEALTH_HOME, DEM_HEALTH_OTH, DEM_HEALTH_ROLE))
 ```
 
 ```{r full model, results = "hide"}
 full_model <- multinom(DAST_CAT ~ PAINREL_NMUYR + STIM_NMUYR + SED_NMUYR + THC_NMUYR + OP_NMUYR + GABA_NMUYR + DEM_GENDER + DEM_AGE10 + DEM_REGION + DEM_INCOME + TOB_LIFE, 
-                       data = us_19_mod)
+                       data = us_19_mod1)
 ```
 
 ```{r tidy full model}
@@ -195,7 +195,7 @@ full_model <- multinom(DAST_CAT ~ PAINREL_NMUYR + STIM_NMUYR + SED_NMUYR + THC_N
 ```
 
 ```{r backward model selection, results = "hide"}
-int_only_model <- multinom(DAST_CAT ~ 1, data = us_19_mod)
+int_only_model <- multinom(DAST_CAT ~ 1, data = us_19_mod1)
 
 final_model <- step(full_model, scope = formula(int_only_model), direction = "backward")
 ```
