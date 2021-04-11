@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r packages}
 library(tidyverse)
+library(nnet)
 ```
 
 ```{r}
@@ -19,11 +20,26 @@ us_19 <- read_csv('~/df_data/US/us_19.csv')
 ```
 
 ```{r}
+us_19_mod <- us_19 %>% 
+  select(ends_with("NMU"), DAST_CAT)
+
+na.omit(us_19_mod)
+```
+
+```{r}
+ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(ILLXCAN_YR))) +
+  geom_bar(position = "fill") +
+  scale_fill_discrete(name = "Cannabis \nyearly use", labels = c("No", "Yes"), guide = guide_legend(reverse=TRUE))
+```
+
+
+```{r}
 ## full model 
-full_model <- lm(DAST_CAT ~ BHYD_NMU + BUP_NMU + COD_NMU + DIHY_NMU + ELU_NMU + FENT_NMU + GAB_NMU + HYD_NMU + HYDM_NMU + KTM_NMU + METH_NMU + MORPH_NMU + OXY_NMU + OXYM_NMU + PREG_NMU + SUF_NMU + TAP_NMU + TRAM_NMU, data = us_19)
+full_model <- multinom(DAST_CAT ~ BHYD_NMU + BUP_NMU + COD_NMU + DIHY_NMU + ELU_NMU + FENT_NMU + GAB_NMU + HYD_NMU + HYDM_NMU + KTM_NMU + METH_NMU + MORPH_NMU + OXY_NMU + OXYM_NMU + PREG_NMU + SUF_NMU + TAP_NMU + TRAM_NMU, data = us_19_mod)
 
 tidy(full_model)
 ```
+
 
 ```{r}
 ## model selection using step() function
