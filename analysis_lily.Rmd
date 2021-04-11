@@ -231,6 +231,20 @@ tidy(final_binary_model, conf.int = TRUE) %>%
 
 ## Model Assumptions
 
+```{r}
+# us_19_mod %>%
+#   count(PAINREL_NMUYR, DAST_binary) %>%
+#   group_by(PAINREL_NMUYR) %>%
+#   mutate(prop = n/sum(n)) %>%
+#   filter(DAST_binary == "1") %>%
+#   mutate(emp_logit = log(prop/(1-prop)))
+```
+
+```{r}
+# library(Stat2Data)
+# emplogitplot2(DAST_binary ~ PAINREL_NMUYR + STIM_NMUYR + THC_NMUYR + DEM_GENDER + DEM_AGE + DEM_INCOME + TOB_LIFE, data = us_19_mod)
+```
+
 The randomness condition is satisfied. We do not have reason to believe that the participants in this study differ systematically from adults in the U.S.
 
 The independence condition is satisfied. It is reasonable to conclude that the participants' health and drug use behavior characteristics are independent of one another.
