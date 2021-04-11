@@ -166,10 +166,13 @@ op_dast_10 + gaba_dast_10
 
 ## Model Selection
 
+**Multinomial Model**
+
 ```{r}
 set.seed(2021)
 us_19_mod <- us_19 %>%
-  sample_n(1000)
+  sample_n(1000) %>% 
+  mutate(DAST_binary = if_else(DAST_SUM < 3, 0, 1))
 ```
 
 ```{r}
@@ -202,6 +205,28 @@ tidy(final_model, conf.int = TRUE) %>%
   kable(digits = 3)
 ```
 
+**Binary Model**
+
+```{r binary model}
+binary_model <- glm(DAST_binary ~ PAINREL_NMUYR + STIM_NMUYR + SED_NMUYR + THC_NMUYR + OP_NMUYR + GABA_NMUYR + DEM_GENDER + DEM_AGE10 + DEM_REGION + DEM_INCOME + TOB_LIFE, data = us_19_mod, family = binomial)
+```
+
+```{r tidy binary model}
+tidy(binary_model) %>% 
+  kable(digits = 3)
+```
+
+```{r backward binary model selection, results = "hide"}
+int_only_binary_model <- glm(DAST_binary ~ 1, data = us_19_mod, family = binomial)
+
+final_binary_model <- step(binary_model, scope = formula(int_only_binary_model), direction = "backward")
+```
+
+```{r tidy final binary model}
+tidy(final_binary_model, conf.int = TRUE) %>% 
+  kable(digits = 3)
+```
+
 # Results
 
 ## Model Assumptions
@@ -216,70 +241,76 @@ The independence condition is satisfied. It is reasonable to conclude that the p
 
 ```{r leverage threshold}
 #calculate threshold
-#leverage_threshold <- 2*(80+1)/1000
+leverage_threshold <- 2*(16+1)/1000
 ```
 
 ```{r leverage v obs num, fig.height = 3, fig.width = 5, fig.align='center'}
 ##add row number to help with graphing 
-#final_model_augmented <- augment(final_model) %>%
-#   mutate(obs_num = row_number())
+final_model_augmented <- augment(final_binary_model) %>%
+   mutate(obs_num = row_number())
 
-# ggplot(data = final_model_augmented, aes(x = obs_num, y = .hat)) + 
-#   geom_point(alpha = 0.7) + 
-#   geom_hline(yintercept = leverage_threshold, color = "red") +
-#   labs(x = "Observation Number", y = "Leverage") +
-#   geom_text(aes(label=ifelse(.hat > leverage_threshold,
-#                              as.character(obs_num), "")), nudge_x = 4) +
-#   theme_bw()
+ggplot(data = final_model_augmented, aes(x = obs_num, y = .hat)) +
+  geom_point(alpha = 0.7) +
+  geom_hline(yintercept = leverage_threshold, color = "red") +
+  labs(x = "Observation Number", y = "Leverage") +
+  geom_text(aes(label=ifelse(.hat > leverage_threshold,
+                             as.character(obs_num), "")), nudge_x = 4) +
+  theme_bw()
 ```
 
 **Standardized Residuals**
 
 ```{r std resid, fig.height = 3, fig.width = 5, fig.align='center'}
 #scatterplot of std resid vs predicted
-# ggplot(data = final_model_augmented, aes(x = obs_num, y = .std.resid)) + 
-#   geom_point(alpha = 0.7) + 
-#   geom_hline(yintercept = 0, color = "red") +
-#   geom_hline(linetype = "dotted", yintercept = c(-2,2)) +
-#   geom_hline(linetype = "dotted", yintercept = c(-3,3), color = "red") +
-#   labs(x = "Observation Number", y = "Standardized Residuals") +
-#   geom_text(aes(label=ifelse(.std.resid > 3 | .std.resid < -3,
-#                              as.character(obs_num), "")), nudge_x = 4) +
-#   theme_bw()
+ggplot(data = final_model_augmented, aes(x = obs_num, y = .std.resid)) +
+  geom_point(alpha = 0.7) +
+  geom_hline(yintercept = 0, color = "red") +
+  geom_hline(linetype = "dotted", yintercept = c(-2,2)) +
+  geom_hline(linetype = "dotted", yintercept = c(-3,3), color = "red") +
+  labs(x = "Observation Number", y = "Standardized Residuals") +
+  geom_text(aes(label=ifelse(.std.resid > 3 | .std.resid < -3,
+                             as.character(obs_num), "")), nudge_x = 4) +
+  theme_bw()
+```
+
+```{r potential outlier}
+final_model_augmented %>% 
+  filter(abs(.std.resid) > 3) %>%
+  kable(digit = 3)
 ```
 
 **Cook's Distance**
 
 ```{r cooks d, fig.height = 3, fig.width = 5, fig.align='center'}
 #scatterplot of cook's d vs obs num
-# ggplot(data = final_model_augmented, aes(x = obs_num, y = .cooksd)) + 
-#   geom_point(alpha = 0.7) + 
-#   geom_hline(yintercept = 1, color = "red") +
-#   geom_hline(linetype = "dotted", yintercept = 0.5, color = "red") +
-#   labs(x = "Observation Number", y = "Cook's D") +
-#   geom_text(aes(label=ifelse(.cooksd > 0.5,
-#                              as.character(obs_num), "")), nudge_x = 4) +
-#   theme_bw()
+ggplot(data = final_model_augmented, aes(x = obs_num, y = .cooksd)) +
+  geom_point(alpha = 0.7) +
+  geom_hline(yintercept = 1, color = "red") +
+  geom_hline(linetype = "dotted", yintercept = 0.5, color = "red") +
+  labs(x = "Observation Number", y = "Cook's D") +
+  geom_text(aes(label=ifelse(.cooksd > 0.5,
+                             as.character(obs_num), "")), nudge_x = 4) +
+  theme_bw()
 ```
 
 **Multicollinearity**
 
 ```{r check multicollinearity}
-# vif(final_model) %>%
-#   tidy() %>%
-#   kable(digits = 3)
+vif(final_binary_model) %>%
+  tidy() %>%
+  kable(digits = 3)
 ```
 
 ## Interpretation of Final Model, Discussion & Conclusion
 
 ```{r}
-glance(final_model) %>% 
+glance(final_binary_model) %>% 
   select(AIC) %>%
-  kable(digit = 3, caption = "Final Model")
+  kable(digit = 3, caption = "Final Binary Model")
 ```
 
 ```{r}
-glance(full_model) %>% 
+glance(binary_model) %>% 
   select(AIC) %>%
-  kable(digit = 3, caption = "Full Model (before backward selection)")
+  kable(digit = 3, caption = "Binary Model (before backward selection)")
 ```
