@@ -1,0 +1,109 @@
+---
+title: "Predicting opioid misuse"
+author: "edenzdeng"
+date: "4/10/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r packages, include=FALSE}
+library(dplyr)
+library(tidyverse)
+library(BMA)
+```
+
+```{r load_data, include=FALSE}
+us19 = read.csv("data/us_19.csv")
+
+# decide which medications to include as covariates
+## using 10% cut-off here
+useyr <- us19 %>%
+  filter(OP_USE == 1) %>%
+  select(ends_with("USEYR"))
+
+keep = c()
+for (col in colnames(useyr)) {
+  index = which(names(useyr) == col)
+  if (length(useyr[which(useyr[index] == 1), index]) > 0.1*nrow(useyr)) {
+    keep <- append(keep, col, after = length(keep))
+  }
+}
+# remove redundant or non-useful predictors
+keep <- keep[!keep %in% c("OP_USEYR", "GABA_USEYR", "PAINREL_USEYR", "OTCOTH_USEYR")]
+
+# use demographic variables
+## DAST-10 score
+## mental health diseases
+## past year use of meds with > 10% prevalence in opioid users
+## past year acute or chronic pain
+## to predict opioid misuse in past year
+op_users <- us19 %>%
+  filter(OP_USE == 1) %>%
+  select(DEM_AGE10, DEM_REGION, DEM_GENDER, DEM_INCOME, DEM_EDU, OP_NMUYR, DAST_SUM, all_of(keep), starts_with("MENT"), starts_with("DEM_RACE"), PAIN_ACUTEYR, PAIN_CHRONICYR)
+
+# race and mental health diagnosis indicator variables
+op_users <- op_users %>%
+  mutate(RACE = case_when(DEM_RACE_AIAN == 1 ~ 'AIAN',
+         DEM_RACE_ASIAN == 1 ~ 'ASIAN',
+         DEM_RACE_BLACK ==1 ~ 'BLACK',
+         DEM_RACE_NHPI == 1 ~ 'NHPI',
+         DEM_RACE_WHITE == 1 ~ 'WHITE',
+         DEM_RACE_OTH == 1 ~ "OTHER")) %>%
+  select(-DEM_RACE_AIAN, -DEM_RACE_ASIAN, -DEM_RACE_BLACK, -DEM_RACE_OTH, -DEM_RACE_WHITE, -DEM_RACE_NHPI) %>%
+  mutate(DIAGNOSIS_MENT = case_when(MENT_ANYANX == 1 ~ 1,
+                          MENT_ADHD == 1 ~ 1,
+                          MENT_AUT == 1 ~ 1,
+                          MENT_BIP == 1 ~ 1,
+                          MENT_BPD == 1 ~ 1,
+                          MENT_DEP == 1 ~ 1,
+                          MENT_EAT == 1 ~ 1,
+                          MENT_OCD == 1 ~ 1,
+                          MENT_PPD == 1 ~ 1,
+                          MENT_PTSD == 1 ~ 1,
+                          MENT_SCH == 1 ~ 1,
+                          MENT_OTH == 1 ~ 1,
+                          MENT_NONE == 1 ~ 0)) %>%
+  select(-starts_with("MENT"))
+
+for (col in colnames(op_users)) {
+  op_users[col] = lapply(op_users[col], factor)
+}
+op_users$DAST_SUM = as.numeric(op_users$DAST_SUM)
+op_users$RACE <- factor(op_users$RACE, levels = c("WHITE", "BLACK", "ASIAN", "AIAN", "NHPI", "OTHER"))
+
+# fill NAs in useyr variables with 0 because NA implies the respondent did not indicate use of the medication at all
+op_users[is.na(op_users)] <- 0
+```
+
+# Data visualization
+```{r datavis, warning=FALSE, echo=FALSE}
+# counts
+par(mfrow=c(2,2))
+barplot(table(op_users$DAST_SUM), xlab = "DAST-10 score", ylab = "Count")
+barplot(table(op_users$DEM_GENDER), xlab = "Gender (1=M)", ylab = "Count")
+barplot(table(op_users$DEM_INCOME), xlab = "Income category", ylab = "Count")
+barplot(table(op_users$DEM_AGE10, xlab = "Age category", ylab = "Count"))
+table(op_users$RACE)
+```
+
+```{r lr_model, echo=FALSE}
+full_model <- glm(OP_NMUYR ~ ., data = op_users, family = "binomial")
+# select model with AIC
+initial_model <- stepAIC(full_model, scope = OP_NMUYR ~ 1, direction = "backward")
+summary(initial_model)
+
+# select models with Bayesian model averaging (many covariates, some important)
+output <- bic.glm(initial_model$formula, glm.family="binomial",
+data=op_users)
+summary(output)
+# predictors in best model
+output$label[1] # same result as using BMA only
+
+lr_model <- glm(OP_NMUYR ~ DEM_AGE10 + DEM_GENDER + DAST_SUM + COD_USEYR + HYD_USEYR + OXY_USEYR + TRAM_USEYR + ACE_USEYR + DEX_USEYR + NAP_USEYR + SED_USEYR + RACE, data = op_users, family = "binomial")
+summary(lr_model)
+
+# diagnostics
+car::vif(lr_model)
+```
