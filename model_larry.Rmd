@@ -1,0 +1,32 @@
+---
+title: "Model"
+author: "Larry Zheng"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+library(tidyverse)
+```
+
+```{r}
+us_19 <- read_csv('~/df_data/US/us_19.csv')
+#glimpse(us_19)
+```
+
+```{r}
+## full model 
+full_model <- lm(DAST_CAT ~ BHYD_NMU + BUP_NMU + COD_NMU + DIHY_NMU + ELU_NMU + FENT_NMU + GAB_NMU + HYD_NMU + HYDM_NMU + KTM_NMU + METH_NMU + MORPH_NMU + OXY_NMU + OXYM_NMU + PREG_NMU + SUF_NMU + TAP_NMU + TRAM_NMU, data = us_19)
+
+tidy(full_model)
+```
+
+```{r}
+## model selection using step() function
+selected_model <- step(full_model, direction = "backward")
+```
+
