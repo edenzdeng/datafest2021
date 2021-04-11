@@ -15,8 +15,8 @@ library(nnet)
 ```
 
 ```{r}
-us_19 <- read_csv('~/df_data/US/us_19.csv')
-#glimpse(us_19)
+us_19 <- read_csv('~/df_data/US/us_19.csv') %>%
+  mutate(DAST_binary = if_else(DAST_SUM < 3, 0, 1))
 ```
 
 ```{r}
@@ -44,5 +44,17 @@ tidy(full_model)
 ```{r}
 ## model selection using step() function
 selected_model <- step(full_model, direction = "backward")
+```
+
+
+######
+
+
+Model with DAST_binary
+
+```{r}
+DAST_model <- glm(DAST_binary ~ factor(CAN_USE) + factor(DEM_GENDER) + factor(DEM_INCOME) + factor(DEM_GENHEALTH), data = us_19, family = binomial)
+
+tidy(DAST_model)
 ```
 
