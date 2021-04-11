@@ -32,3 +32,40 @@ us_19 %>%
   count(factor(THC_USE)) %>% 
   mutate(pct_total = n/sum(n))
 ```
+
+```{r}
+ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(THC_USE))) +
+  geom_bar(position = "fill") + 
+  labs(title = "Relationship between DAST-10 category \nand prescription cannabinoid lifetime use", 
+       x = "DAST-10 category", 
+       y = "Count") +
+  scale_fill_discrete(name = "Prescription cannabinoid \nlifetime use", labels = c("No", "Yes"), guide = guide_legend(reverse=TRUE))
+```
+
+```{r}
+us_19_mod <- us_19 %>% 
+  select(starts_with("THC"), starts_with("DEM"), DAST_CAT) %>% 
+  na.omit()
+glimpse(us_19_mod)
+```
+
+```{r full model, results = "hide"}
+full_model <- multinom(DAST_CAT ~ ., 
+                       data = us_19_mod)
+```
+
+```{r tidy full model}
+tidy(full_model) %>%
+  kable(digits = 3)
+```
+
+```{r backward model selection, results = "hide"}
+int_only_model <- multinom(DAST_CAT ~ 1, data = us_19_mod)
+
+final_model <- step(full_model, scope = formula(int_only_model), direction = "backward")
+```
+
+```{r tidy final model}
+tidy(final_model, conf.int = TRUE) %>% 
+  kable(digits = 3)
+```
