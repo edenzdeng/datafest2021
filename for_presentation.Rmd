@@ -1,0 +1,87 @@
+---
+title: "for_presentation"
+author: "Sara Shao"
+date: "4/11/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r packages}
+library(tidyverse)
+library(nnet)
+library(varhandle)
+```
+
+```{r, message = FALSE}
+us_19 <- read_csv('~/df_data/US/us_19.csv')
+```
+
+``` {r}
+#col_names <- colnames(us_19)
+#us_19 <- lapply(us_19%>% select(-DEM_AGE), as.factor)
+#us_19 <- data.frame(matrix(unlist(us_19), nrow=length(us_19), byrow=TRUE))
+#us_19 <- data.frame(t(us_19))
+#colnames(us_19) <- col_names
+```
+
+
+```{r}
+set.seed(2021)
+us_19_mod <- us_19 %>%
+  sample_n(3000) %>% 
+  mutate(DAST_binary = if_else(DAST_SUM < 3, 0, 1))
+```
+
+```{r}
+us_19_mod <- us_19_mod %>% 
+  select(ends_with("NMUYR"), starts_with("DEM"), TOB_LIFE, DAST_CAT, DAST_binary) %>% 
+  subset(select = -c(DEM_PREG, DEM_PREG_WK, DEM_STDNT_PROGRAM, DEM_STDNT_UNDER, DEM_VET_SERV, DEM_HEALTH_PRIV, DEM_HEALTH_PRE, DEM_HEALTH_HOS, DEM_HEALTH_OUT, DEM_HEALTH_HOME, DEM_HEALTH_OTH, DEM_HEALTH_ROLE))
+
+us_19_mod
+```
+
+```{r}
+us_19_mod <- us_19_mod %>%
+  mutate(DEM_GENDER = factor(DEM_GENDER),
+         DEM_REGION = factor(DEM_REGION),
+         DEM_INCOME = factor(DEM_INCOME),
+         TOB_LIFE = factor(TOB_LIFE),
+         DAST_binary = factor(DAST_binary),
+         PAINREL_NMUYR = factor(PAINREL_NMUYR),
+         STIM_NMUYR = factor(STIM_NMUYR),
+         SED_NMUYR = factor(SED_NMUYR),
+         THC_NMUYR = factor(THC_NMUYR),
+         OP_NMUYR = factor(OP_NMUYR),
+         GAB_NMUYR = factor(GAB_NMUYR))
+glimpse(us_19_mod)
+```
+
+
+```{r binary model}
+binary_model <- glm(DAST_binary ~ THC_NMUYR + OP_NMUYR + GABA_NMUYR + PAINREL_NMUYR + STIM_NMUYR + SED_NMUYR + DEM_GENDER + DEM_AGE + DEM_REGION + DEM_INCOME + TOB_LIFE, data = us_19_mod, family = binomial)
+```
+
+```{r tidy binary model}
+tidy(binary_model) %>% 
+  kable(digits = 3)
+```
+
+```{r}
+int_only_binary_model <- glm(DAST_binary ~ 1, data = us_19_mod, family = binomial)
+
+final_binary_model <- step(binary_model, scope = formula(int_only_binary_model), direction = "backward")
+```
+
+```{r tidy final binary model}
+tidy(final_binary_model, conf.int = TRUE) %>% 
+  kable(digits = 3)
+```
+
+
+
+
