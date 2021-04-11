@@ -43,19 +43,19 @@ ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(THC
 ```
 
 ```{r}
-us_19_mod <- us_19 %>% 
-  select(starts_with("THC"), starts_with("DEM"), DAST_CAT) %>% 
-  subset(select = -c(DEM_PREG, DEM_PREG_WK, DEM_STDNT_PROGRAM, DEM_STDNT_UNDER, DEM_VET_SERV, DEM_HEALTH_PRIV, DEM_HEALTH_PRE, DEM_HEALTH_HOS, DEM_HEALTH_OUT, DEM_HEALTH_HOME, DEM_HEALTH_OTH, DEM_HEALTH_ROLE))
-glimpse(us_19_mod)
-```
-
-```{r}
 us_19 %>% 
      select(starts_with("DEM"))
 ```
 
+```{r}
+us_19_mod <- us_19 %>% 
+  select(ends_with("NMUYR"), starts_with("DEM"), DAST_CAT) %>% 
+  subset(select = -c(DEM_PREG, DEM_PREG_WK, DEM_STDNT_PROGRAM, DEM_STDNT_UNDER, DEM_VET_SERV, DEM_HEALTH_PRIV, DEM_HEALTH_PRE, DEM_HEALTH_HOS, DEM_HEALTH_OUT, DEM_HEALTH_HOME, DEM_HEALTH_OTH, DEM_HEALTH_ROLE))
+glimpse(us_19_mod)
+```
+
 ```{r full model, results = "hide"}
-full_model <- multinom(DAST_CAT ~ ., 
+full_model <- multinom(DAST_CAT ~ PAINREL_NMUYR + STIM_NMUYR + SED_NMUYR + THC_NMUYR + OP_NMUYR + GABA_NMUYR, 
                        data = us_19_mod)
 ```
 
