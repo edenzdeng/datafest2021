@@ -1,0 +1,113 @@
+---
+title: "MODEL"
+author: "Allison Shi"
+date: "`r Sys.Date()"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load-packages, warning = F, message = F}
+library(tidyverse)
+library(knitr)
+library(broom)
+library(nnet) # for multinomial logistic regression
+library(patchwork)
+```
+
+```{r, message = F}
+us_19 <- read_csv('~/df_data/US/us_19.csv')
+#glimpse(us_19)
+```
+
+## EDA
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT))) +
+  geom_bar()
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(PAINREL_NMUYR))) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set3")
+```
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(STIM_NMUYR))) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(SED_NMUYR))) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(THC_NMUYR))) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(OP_NMUYR))) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(DAST_CAT), fill = as.factor(GABA_NMUYR))) +
+  geom_bar() +
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(PAINREL_NMUYR))) +
+  geom_bar() 
+```
+
+```{r}
+ggplot(data = us_19, aes(x = as.factor(PAINREL_NMUYR))) +
+  geom_bar() 
+```
+
+```{r}
+ggplot(data = us_19, aes(x = DEM_AGE)) +
+  geom_histogram()
+```
+`CAN_USE` = 
+```{r}
+us_19 %>% 
+  mutate(SED_USE = as.factor(SED_USE), DAST_1 = as.factor(DAST_1)) %>% 
+  ggplot(mapping = aes(x = DAST_1, fill = SED_USE)) +
+  geom_bar() + 
+  scale_fill_brewer(palette="Set3")
+```
+
+```{r}
+us_19 %>%
+  group_by(factor(DAST_1)) %>% 
+  count(factor(SED_USE)) %>% 
+  mutate(pct_total = n/sum(n))
+```
+
+```{r}
+ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(SED_USE))) +
+  geom_bar(position = "fill") + 
+  labs(title = "Relationship between DAST-10 category \nand prescription sedative lifetime use", 
+       x = "DAST-10 category", 
+       y = "Count") +
+  scale_fill_discrete(name = "Prescription sedative \nlifetime use", labels = c("No", "Yes"), guide = guide_legend(reverse=TRUE))
+```
+
+```{r}
+ggplot(data = us_19, mapping = aes(x = as.factor(DAST_CAT), fill = as.factor(SED_USE))) +
+  geom_bar(position = "fill") + 
+  labs(title = "Relationship between DAST-10 category \nand prescription sedative lifetime use", 
+       x = "DAST-10 category", 
+       y = "Count") +
+  scale_fill_discrete(name = "Prescription sedative \nlifetime use", labels = c("No", "Yes"), guide = guide_legend(reverse=TRUE))
+```
